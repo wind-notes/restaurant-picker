@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ff7a2e">
 <title>干饭盲选官 | 帮纠结星人选餐厅</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="干饭盲选官">
 <style>
   :root {
     --bg: #fbf0e4;
@@ -798,7 +803,8 @@ function photoOf(poi) {
   return p ? p.url.replace(/^http:/, "https:") : "";
 }
 function ratingOf(poi) {
-  const r = poi.biz_ext && parseFloat(poi.biz_ext.rating);
+  // 高德返回评分在顶层 poi.rating（extensions:'all' 时才有）
+  const r = parseFloat(poi.rating);
   return r ? r : 0;
 }
 function cuisineOf(poi) {
@@ -1207,6 +1213,14 @@ $("lotteryOverlay").addEventListener("click", (e) => {
     $("lotteryOverlay").classList.remove("show");
   }
 });
+
+/* ---------- PWA：注册 Service Worker（可安装到桌面当 App） ---------- */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js", { scope: "./" })
+      .catch((e) => console.warn("SW 注册失败：", e));
+  });
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,26 @@
+{
+  "name": "干饭盲选官",
+  "short_name": "干饭盲选官",
+  "description": "帮纠结星人选餐厅 · 输入地址找1km内餐厅一键抽",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fbf0e4",
+  "theme_color": "#ff7a2e",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
