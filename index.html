@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ff7a2e">
+<title>干饭盲选官 | 帮纠结星人选餐厅</title>
+<style>
+  :root {
+    --bg: #fbf0e4;
+    --orange: #ff7a2e;
+    --orange-deep: #f45d1c;
+    --orange-soft: #ffe7d3;
+    --text: #4a3826;
+    --text-2: #b09278;
+    --amber: #ffb02e;
+    --red: #ff3b30;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    max-width: 640px;
+    margin: 0 auto;
+    min-height: 100%;
+    padding-bottom: calc(86px + env(safe-area-inset-bottom));
+  }
+
+  /* ===== 顶部橙卡 ===== */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    margin: 12px;
+    background: linear-gradient(135deg, #ff9d52, #ff6f28);
+    border-radius: 24px;
+    padding: 24px 22px;
+    box-shadow: 0 10px 24px rgba(244,93,28,.28);
+  }
+  .hero .doodle { position: absolute; opacity: .3; user-select: none; }
+  .hero .d1 { right: 22px; top: 14px; font-size: 30px; }
+  .hero .d2 { right: 70px; bottom: 12px; font-size: 26px; }
+  .hero .d3 { right: 12px; bottom: 34px; font-size: 24px; }
+  .hero h1 {
+    font-size: 28px; font-weight: 900; color: #fff; letter-spacing: 1px;
+    position: relative; z-index: 1; text-shadow: 0 2px 6px rgba(180,60,0,.25);
+  }
+  .daily-quote {
+    margin-top: 10px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #fff8f0;
+    position: relative;
+    z-index: 1;
+  }
+  .daily-quote::before { content: "今日签："; opacity: .75; font-weight: 700; }
+  .hero-sub { margin-top: 8px; font-size: 12.5px; color: #ffe9d8; position: relative; z-index: 1; }
+
+  /* ===== 模式切换 ===== */
+  .modes { display: flex; gap: 8px; margin: 0 12px; }
+  .mode-btn {
+    flex: 1; height: 42px; border: none; border-radius: 13px;
+    background: #fff; color: #8a6a4c; font-size: 15px; font-weight: 700;
+    box-shadow: 0 2px 8px rgba(244,93,28,.07);
+  }
+  .mode-btn.active {
+    background: linear-gradient(135deg, #5a4636, #3c2c1e);
+    color: #ffe2b8;
+    box-shadow: 0 5px 13px rgba(60,44,30,.3);
+  }
+
+  /* ===== 搜索行 ===== */
+  .search { display: flex; gap: 8px; margin: 10px 12px 0; }
+  .input-wrap { flex: 1; position: relative; min-width: 0; }
+  .loc-pin {
+    position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+    color: var(--orange); display: flex; z-index: 1;
+  }
+  .loc-pin.loading svg { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .search input {
+    width: 100%; height: 48px; border: none; border-radius: 14px;
+    padding: 0 14px 0 42px; font-size: 16px; background: #fff; color: var(--text);
+    outline: none; box-shadow: 0 2px 8px rgba(244,93,28,.08);
+  }
+  .search input::placeholder { color: #c4ad94; }
+  .go {
+    height: 48px; padding: 0 22px; flex-shrink: 0; border: none; border-radius: 14px;
+    background: linear-gradient(135deg, #ff9144, #ff6f28);
+    color: #fff; font-size: 16px; font-weight: 800; box-shadow: 0 4px 12px rgba(244,93,28,.3);
+  }
+  .go:active { transform: scale(.96); }
+
+  /* ===== 分类 tabs（餐厅为组合按钮，内嵌下拉） ===== */
+  .tabs { display: flex; gap: 8px; margin: 10px 12px 0; }
+  .tab {
+    flex: 1; height: 46px; border: none; border-radius: 14px; background: #fff;
+    color: #6b5138; font-size: 16px; font-weight: 700;
+    box-shadow: 0 2px 8px rgba(244,93,28,.07); transition: all .2s;
+  }
+  .tab.active {
+    background: linear-gradient(135deg, #ff9144, #ff6f28); color: #fff;
+    box-shadow: 0 5px 14px rgba(244,93,28,.32);
+  }
+  .tab-count { color: var(--red); font-size: 12px; font-weight: 800; margin-left: 4px; }
+  .tab.active .tab-count { color: #fff0c8; }
+
+  .tab-combo {
+    flex: 1.55; position: relative; height: 46px; border-radius: 14px; background: #fff;
+    box-shadow: 0 2px 8px rgba(244,93,28,.07); overflow: hidden; transition: all .2s;
+  }
+  .tab-combo.active {
+    background: linear-gradient(135deg, #ff9144, #ff6f28);
+    box-shadow: 0 5px 14px rgba(244,93,28,.32);
+  }
+  .combo-label {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: #6b5138; padding-right: 74px;
+  }
+  .tab-combo.active .combo-label { color: #fff; }
+  .combo-select {
+    position: absolute; right: 5px; top: 6px; bottom: 6px; width: 72px;
+  }
+  .combo-select select {
+    width: 100%; height: 100%; border: none; border-radius: 9px; background: #fff;
+    color: var(--orange-deep); font-size: 11px; font-weight: 800;
+    padding: 0 16px 0 7px; outline: none;
+    appearance: none; -webkit-appearance: none;
+  }
+  .combo-select .caret {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    font-size: 8px; color: var(--orange); pointer-events: none;
+  }
+
+  #status { padding: 9px 16px 0; font-size: 13px; color: var(--text-2); min-height: 20px; }
+  #status.error { color: var(--red); }
+  .meta { padding: 6px 16px 8px; font-size: 14px; color: #9c7c5d; font-weight: 600; }
+
+  /* ===== 餐厅卡片 ===== */
+  #list { list-style: none; margin: 0 12px; }
+  .card {
+    position: relative;
+    background: #fff; border-radius: 20px; margin-bottom: 10px;
+    display: flex; align-items: stretch;
+    box-shadow: 0 2px 10px rgba(244,93,28,.08);
+    transition: transform .2s, box-shadow .2s, border-color .2s;
+    border: 2px solid transparent; overflow: hidden;
+  }
+  .card.picked {
+    border-color: var(--orange); box-shadow: 0 8px 20px rgba(244,93,28,.25); transform: scale(1.02);
+  }
+  .resto-thumb {
+    position: relative; width: 96px; flex-shrink: 0;
+    background: #fdeedd; display: flex; align-items: center; justify-content: center; color: var(--orange);
+  }
+  .resto-thumb img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .resto-thumb svg { display: none; }
+  .resto-thumb.fallback svg { display: block; }
+  .resto-thumb.fallback img { display: none; }
+
+  .card-body { flex: 1; min-width: 0; padding: 11px 42px 13px 14px; }
+  .card-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .card-name { font-size: 16.5px; font-weight: 800; }
+  .card-dist { font-size: 14px; color: var(--orange); font-weight: 800; flex-shrink: 0; }
+  .card-addr {
+    margin-top: 4px; font-size: 13px; color: var(--text-2); line-height: 1.45;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .card-stars { margin-top: 6px; display: flex; align-items: center; gap: 5px; }
+  .card-tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: 12px; font-weight: 700; color: #8a5a00;
+    background: #ffe14d; border-radius: 8px; padding: 3px 10px;
+  }
+
+  /* 卡片右下角：塞进盲盒三角 */
+  .add-blind {
+    position: absolute; right: 8px; bottom: 8px;
+    width: 27px; height: 27px; border-radius: 50%; border: none;
+    background: var(--orange-soft); color: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(244,93,28,.25); z-index: 2;
+  }
+  .add-blind:active { transform: scale(.9); }
+  .add-blind.added { background: linear-gradient(135deg, #ff9144, #ff6f28); color: #fff; }
+
+  /* 评分星星 */
+  .stars { position: relative; display: inline-block; font-size: 14px; line-height: 1; letter-spacing: 1px; }
+  .stars .bg { color: #ecdcc9; }
+  .stars .fg {
+    position: absolute; left: 0; top: 0; overflow: hidden; white-space: nowrap; color: var(--amber);
+  }
+  .rating-num { font-size: 12px; font-weight: 800; color: #c98a1e; }
+  .no-rating { font-size: 12px; color: #c2ad94; }
+
+  /* ===== 底部大按钮 ===== */
+  .pick-bar {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: 0;
+    width: 100%; max-width: 640px; padding: 8px 12px;
+    background: linear-gradient(to top, var(--bg) 62%, rgba(251,240,228,0));
+  }
+  .pick-bar button {
+    width: 100%; height: 48px; border: none; border-radius: 17px;
+    background: linear-gradient(135deg, #ff9144, #ff6f28);
+    color: #fff; font-size: 17px; font-weight: 900; letter-spacing: 2px;
+    box-shadow: 0 7px 17px rgba(244,93,28,.38);
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+  }
+  .pick-bar button:active { transform: scale(.97); }
+  .pick-bar button:disabled { background: #ddc9b2; box-shadow: none; }
+  .pick-bar button svg { animation: diceShake 1.4s ease-in-out infinite; }
+  @keyframes diceShake {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-14deg); }
+    75% { transform: rotate(14deg); }
+  }
+
+  /* ===== 普通抽选弹层 ===== */
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(74,40,10,.5); backdrop-filter: blur(3px);
+    z-index: 10; align-items: flex-end; justify-content: center;
+  }
+  .overlay.show { display: flex; }
+  .sheet {
+    position: relative; background: #fff9f2; width: 100%; max-width: 640px;
+    border-radius: 28px 28px 0 0;
+    padding: 26px 22px calc(26px + env(safe-area-inset-bottom));
+    text-align: center; animation: slideUp .3s ease-out; overflow: hidden;
+  }
+  @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .ring {
+    width: 100px; height: 100px; margin: 4px auto 12px; border-radius: 50%;
+    border: 9px solid #ffe2c9; border-top-color: var(--orange); border-right-color: #ffb27a;
+    animation: spin .7s linear infinite;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ring span { font-size: 36px; animation: spin .7s linear infinite reverse; }
+  .roll-label { font-size: 14px; color: #b08a64; font-weight: 700; letter-spacing: 2px; }
+  .roll-name {
+    margin-top: 8px; min-height: 64px; display: flex; align-items: center; justify-content: center;
+    font-size: 23px; font-weight: 900; color: var(--orange); padding: 0 10px; line-height: 1.3;
+  }
+  .roll-name.flick { animation: flick .09s linear; }
+  @keyframes flick {
+    0% { transform: scale(.92); opacity: .6; }
+    100% { transform: scale(1.06); opacity: 1; }
+  }
+  .roll-name.final {
+    color: var(--orange-deep); font-size: 27px;
+    animation: pop .5s cubic-bezier(.2,1.6,.4,1); text-shadow: 0 4px 16px rgba(244,93,28,.3);
+  }
+  @keyframes pop {
+    0% { transform: scale(.3); opacity: 0; }
+    60% { transform: scale(1.12); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  #pickThumb { display: none; width: 84px; height: 84px; margin: 4px auto; border-radius: 16px; }
+  #pickThumb.show { display: flex; animation: pop .45s cubic-bezier(.2,1.6,.4,1); }
+  #pickStars { display: none; justify-content: center; margin-top: 8px; }
+  #pickStars.show { display: flex; animation: fadeUp .4s ease .05s both; }
+  #pickInfo { display: none; margin-top: 10px; font-size: 14px; color: #7a5c3e; line-height: 1.9; }
+  #pickInfo.show { display: block; animation: fadeUp .4s ease .1s both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .actions { display: none; margin-top: 16px; gap: 10px; }
+  .actions.show { display: flex; animation: fadeUp .4s ease .2s both; }
+  .actions button {
+    flex: 1; height: 48px; border-radius: 14px; font-size: 15px; font-weight: 700;
+    border: 2px solid var(--orange-soft); background: #fff; color: var(--orange-deep);
+  }
+  .actions a {
+    flex: 1; height: 48px; display: flex; align-items: center; justify-content: center;
+    border-radius: 14px; background: linear-gradient(135deg, #ff9144, #ff6f28);
+    color: #fff; font-size: 15px; font-weight: 700; text-decoration: none;
+    box-shadow: 0 4px 12px rgba(244,93,28,.3);
+  }
+  .confetti { position: absolute; inset: 0; pointer-events: none; }
+  .cf-piece {
+    position: absolute; left: 50%; top: 38%; border-radius: 2px;
+    animation: cf 1.2s cubic-bezier(.15,.6,.35,1) forwards;
+  }
+  @keyframes cf {
+    0% { transform: translate(-50%, 0) rotate(0); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--x)), var(--y)) rotate(var(--r)); opacity: 0; }
+  }
+
+  /* ===== 盲盒模式页面 ===== */
+  #blindboxView { display: none; padding-top: 4px; }
+  #blindboxView.show { display: block; }
+  .panel {
+    background: #fff; border-radius: 20px; margin: 12px; padding: 16px;
+    box-shadow: 0 2px 10px rgba(244,93,28,.08);
+  }
+  .panel h3 { font-size: 16px; font-weight: 800; }
+  .panel h3 .lim { color: var(--red); font-size: 12px; margin-left: 6px; }
+  .panel .hint { margin-top: 7px; font-size: 12.5px; color: var(--text-2); line-height: 1.6; }
+  .add-row { display: flex; gap: 8px; margin-top: 12px; }
+  .add-row input {
+    flex: 1; min-width: 0; height: 44px; border: 1.5px solid #f0dcc2; border-radius: 12px;
+    padding: 0 13px; font-size: 15px; outline: none; color: var(--text);
+  }
+  .add-row input:focus { border-color: var(--orange); }
+  .add-row button {
+    width: 64px; height: 44px; border: none; border-radius: 12px;
+    background: linear-gradient(135deg, #ff9144, #ff6f28); color: #fff; font-size: 15px; font-weight: 800;
+  }
+  .entry-chips { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .echip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--orange-soft); color: #8c4a14;
+    font-size: 13px; font-weight: 700; border-radius: 20px; padding: 7px 8px 7px 12px;
+    max-width: 100%;
+  }
+  .echip .txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
+  .echip .rm {
+    width: 19px; height: 19px; border-radius: 50%; border: none;
+    background: #fff; color: var(--orange-deep); font-size: 11px; line-height: 1;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .empty-tip { font-size: 13px; color: #c4ad94; margin-top: 10px; }
+
+  .blind-actions { display: flex; gap: 10px; margin: 4px 12px 20px; }
+  .blind-actions button {
+    flex: 1; height: 54px; border: none; border-radius: 17px;
+    font-size: 15px; font-weight: 900;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+  }
+  .btn-pack {
+    background: linear-gradient(135deg, #b18cff, #8a5cf6); color: #fff;
+    box-shadow: 0 8px 18px rgba(138,92,246,.35);
+  }
+  .btn-save {
+    background: linear-gradient(135deg, #ff5b5b, #ff2f4e); color: #fff;
+    box-shadow: 0 8px 18px rgba(255,47,78,.35);
+  }
+  .blind-actions button:disabled { background: #ddc9b2; box-shadow: none; color: #fff; }
+
+  /* 已包装好的盲盒展示区 */
+  .box-grid { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
+  .mbox {
+    position: relative; width: calc(33.33% - 6px);
+    border-radius: 12px; overflow: hidden;
+  }
+  .mbox-lid {
+    height: 13px; margin: 0 5px; border-radius: 4px 4px 2px 2px;
+    transform-origin: left bottom; transition: transform .5s ease; position: relative; z-index: 2;
+  }
+  .mbox-surface {
+    border-radius: 10px; padding: 9px 7px 10px; text-align: center; min-height: 74px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .mbox-surface .emo { font-size: 20px; }
+  .mbox-surface .flabel { margin-top: 4px; font-size: 10.5px; font-weight: 800; line-height: 1.3; }
+  .mbox-surface .reveal { display: none; font-size: 11.5px; font-weight: 900; line-height: 1.35; }
+  .mbox.hot { animation: mboxShake .12s linear infinite; }
+  @keyframes mboxShake {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  .mbox.hot .mbox-surface { box-shadow: 0 0 0 3px #ffd84d, 0 6px 14px rgba(255,150,30,.45); }
+  .mbox.winner .mbox-lid { transform: translateY(-22px) rotate(-22deg); }
+  .mbox.winner .mbox-surface { box-shadow: 0 0 0 3px var(--orange), 0 10px 24px rgba(244,93,28,.5); }
+  .mbox.winner .flabel, .mbox.winner .emo { display: none; }
+  .mbox.winner .reveal { display: block; animation: pop .45s cubic-bezier(.2,1.6,.4,1); }
+
+  /* ===== 抽奖全屏弹层 ===== */
+  .lottery-overlay {
+    display: none; position: fixed; inset: 0; z-index: 20;
+    background: radial-gradient(circle at 50% 25%, #6b4020, #2a1608);
+    align-items: center; justify-content: center; padding: 20px 14px; overflow-y: auto;
+  }
+  .lottery-overlay.show { display: flex; }
+  .lottery-panel {
+    background: #fff9f2; width: 100%; max-width: 560px; border-radius: 24px;
+    padding: 22px 16px 24px; text-align: center; position: relative;
+  }
+  .lottery-title { font-size: 18px; font-weight: 900; color: var(--orange-deep); }
+  .lottery-sub { font-size: 12.5px; color: #b08a64; margin-top: 4px; }
+  .lresult { display: none; margin-top: 16px; }
+  .lresult.show { display: block; animation: pop .5s cubic-bezier(.2,1.6,.4,1); }
+  .lresult .lname { font-size: 24px; font-weight: 900; color: var(--orange-deep); line-height: 1.35; }
+  .lresult .lstars { display: flex; justify-content: center; margin-top: 8px; }
+  .lresult .linfo { margin-top: 10px; font-size: 13.5px; color: #7a5c3e; line-height: 1.9; }
+  .lactions { display: none; margin-top: 16px; gap: 10px; }
+  .lactions.show { display: flex; }
+  .lactions button, .lactions a {
+    flex: 1; height: 46px; border-radius: 13px; font-size: 14.5px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center; text-decoration: none;
+  }
+  .lactions button { border: 2px solid var(--orange-soft); background: #fff; color: var(--orange-deep); }
+  .lactions a { background: linear-gradient(135deg, #ff9144, #ff6f28); color: #fff; box-shadow: 0 4px 12px rgba(244,93,28,.3); }
+
+  /* toast */
+  .toast {
+    position: fixed; left: 50%; bottom: 110px; transform: translateX(-50%) translateY(20px);
+    background: rgba(60,44,30,.92); color: #ffe8c8; font-size: 13.5px; font-weight: 700;
+    padding: 10px 18px; border-radius: 22px; z-index: 50; opacity: 0;
+    transition: opacity .25s, transform .25s; pointer-events: none; max-width: 86%; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <span class="doodle d1">🍜</span>
+  <span class="doodle d2">☕</span>
+  <span class="doodle d3">🍰</span>
+  <h1>干饭盲选官</h1>
+  <div class="daily-quote" id="dailyQuote"></div>
+  <div class="hero-sub">帮纠结星人选餐厅 · 输入地址找1km内餐厅一键抽</div>
+</div>
+
+<div class="modes">
+  <button class="mode-btn active" data-mode="normal">🍚 选餐厅</button>
+  <button class="mode-btn" data-mode="blindbox">🎁 盲盒模式</button>
+</div>
+
+<!-- ===== 普通模式 ===== -->
+<div id="normalView">
+  <div class="search">
+    <div class="input-wrap">
+      <span id="locBtn" class="loc-pin" title="定位当前位置" role="button" aria-label="定位当前位置">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V2h-2v1.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V22h2v-1.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+      </span>
+      <input id="addrInput" type="text" placeholder="输入地址，如：北京市朝阳区三里屯" autocomplete="off">
+    </div>
+    <button class="go" id="searchBtn">搜索</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab-combo active" id="foodCombo">
+      <span class="combo-label">餐厅<span class="tab-count" id="cnt-food"></span></span>
+      <span class="combo-select">
+        <select id="subtypeSel">
+          <option value="">全部</option>
+          <option value="中餐厅">中餐厅</option>
+          <option value="外国餐厅">外国餐厅</option>
+          <option value="小吃快餐店">小吃快餐</option>
+          <option value="火锅店">火锅</option>
+          <option value="烧烤店">烧烤</option>
+          <option value="面馆">面馆</option>
+          <option value="海鲜酒楼">海鲜酒楼</option>
+        </select>
+        <span class="caret">▼</span>
+      </span>
+    </div>
+    <button class="tab" data-cat="cafe">咖啡店<span class="tab-count" id="cnt-cafe"></span></button>
+    <button class="tab" data-cat="dessert">甜品店<span class="tab-count" id="cnt-dessert"></span></button>
+  </div>
+
+  <div id="status"></div>
+  <div class="meta" id="meta"></div>
+  <ul id="list"></ul>
+</div>
+
+<!-- ===== 盲盒模式 ===== -->
+<div id="blindboxView">
+  <div class="panel">
+    <h3>我的盲盒清单<span class="lim" id="blindLim">0/10</span></h3>
+    <div class="hint">可以手填想吃的内容（最多 10 个），也可以回到「选餐厅」，点卡片右下角的小三角把餐厅塞进盲盒。</div>
+    <div class="add-row">
+      <input id="customInput" type="text" placeholder="如：火锅、烧烤、楼下泡面……" maxlength="20">
+      <button id="addCustomBtn">添加</button>
+    </div>
+    <div class="entry-chips" id="entryChips"><span class="empty-tip">还是空的，先填一个或去搜餐厅吧～</span></div>
+  </div>
+
+  <div class="panel" id="packedPanel" hidden>
+    <h3>盲盒已包装好</h3>
+    <div class="hint">外表面的标签纯属玄学，开盒概不负责（不是）。</div>
+    <div class="box-grid" id="packedGrid"></div>
+  </div>
+
+  <div class="blind-actions">
+    <button class="btn-pack" id="packBtn">🎁 包装成盲盒</button>
+    <button class="btn-save" id="saveMeBtn">🆘 救救我，帮我选</button>
+  </div>
+</div>
+
+<!-- 普通模式底部按钮 -->
+<div class="pick-bar" id="pickBar">
+  <button id="pickBtn" disabled>
+    <svg viewBox="0 0 24 24" width="23" height="23" fill="#fff"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><circle cx="7.5" cy="7.5" r="1.5"/><circle cx="16.5" cy="7.5" r="1.5"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="12.5" r="1.5"/><circle cx="12" cy="16.5" r="1.5"/></svg>
+    帮我选一个
+  </button>
+</div>
+
+<!-- 普通抽选弹层 -->
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="ring" id="ring"><span>🍜</span></div>
+    <div class="roll-label" id="rollLabel">命运转盘转动中</div>
+    <div class="roll-name" id="rollName"></div>
+    <div class="resto-thumb" id="pickThumb"></div>
+    <div id="pickStars"></div>
+    <div id="pickInfo"></div>
+    <div class="actions">
+      <button id="againBtn">再选一次</button>
+      <a id="navLink" target="_blank" rel="noopener">去高德地图看</a>
+    </div>
+  </div>
+</div>
+
+<!-- 抽奖全屏弹层 -->
+<div class="lottery-overlay" id="lotteryOverlay">
+  <div class="lottery-panel">
+    <div class="lottery-title">🆘 命运开盒中</div>
+    <div class="lottery-sub">盯紧了，盒子要开始跑了</div>
+    <div class="box-grid" id="lotteryGrid"></div>
+    <div class="lresult" id="lresult">
+      <div class="lname" id="lname"></div>
+      <div class="lstars" id="lstars"></div>
+      <div class="linfo" id="linfo"></div>
+    </div>
+    <div class="lactions" id="lactions">
+      <button id="lcloseBtn">收下结果</button>
+      <button id="lagainBtn">再抽一次</button>
+      <a id="lnavLink" target="_blank" rel="noopener">去高德地图看</a>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ======================= 配置区 ======================= */
+// 1. 到 https://console.amap.com 免费注册并创建应用
+// 2. 应用里添加 Key，服务平台选择「Web端(JS API)」
+// 3. 把 Key 粘贴到下面（如提示需要安全密钥，同时填 securityJsCode）
+const AMAP_KEY = "87f5d9946f1bd8d3225cd49f8feea98a";
+const AMAP_SECURITY_CODE = "5eb6f0ae2e8eab68504ca12062d31b22"; // 可选
+/* ===================================================== */
+
+const $ = (id) => document.getElementById(id);
+const addrInput = $("addrInput");
+const searchBtn = $("searchBtn");
+const pickBtn = $("pickBtn");
+const pickBar = $("pickBar");
+const statusEl = $("status");
+const metaEl = $("meta");
+const listEl = $("list");
+const overlay = $("overlay");
+const foodCombo = $("foodCombo");
+const subtypeSel = $("subtypeSel");
+const normalView = $("normalView");
+const blindboxView = $("blindboxView");
+
+let pois = [];
+let lastPicked = null;
+let currentCat = "food";
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+}[c]));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function setStatus(msg, isError = false) {
+  statusEl.textContent = msg || "";
+  statusEl.classList.toggle("error", isError);
+}
+
+/* ---------- 每日搞笑文案 ---------- */
+const DAILY_QUOTES = [
+  "人生大事太多，吃哪家餐厅这件事，咱就不硬扛了。",
+  "纠结不会让餐厅变好吃，但选得快会。",
+  "今天吃什么本来想交给命运，命运说它也忙，让我找你。",
+  "别选了，再选外卖小哥都要下班了。",
+  "吃饱了才有力气继续纠结下一顿。",
+  "成熟的人从不在吃什么上内耗——今天你就当个不成熟的人吧。",
+  "缘分这种东西，有时候半径就是 1km。",
+  "吃哪家不重要，重要的是别让同伴看出你很纠结。",
+  "随机的不是餐厅，是今晚的快乐。",
+  "选择困难症晚期？恭喜，这个 App 就是处方，每日三抽。",
+  "把晚饭交给算法，把减肥交给明天。",
+  "你不是饿，你只是需要一个果断的决定。",
+  "与其在选择里迷路，不如在香味里迷路。",
+  "一日三餐，餐餐都要命运亲自安排。",
+  "今晚这顿饭，老天请客（饭钱你付）。"
+];
+(function dailyQuote() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const day = Math.floor((now - start) / 86400000);
+  $("dailyQuote").textContent = DAILY_QUOTES[day % DAILY_QUOTES.length];
+})();
+
+/* ---------- 模式切换 ---------- */
+document.querySelectorAll(".mode-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".mode-btn").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    const blind = btn.dataset.mode === "blindbox";
+    normalView.style.display = blind ? "none" : "";
+    blindboxView.classList.toggle("show", blind);
+    pickBar.style.display = blind ? "none" : "";
+  });
+});
+
+/* ---------- 分类 ---------- */
+function currentType() {
+  if (currentCat === "cafe") return "咖啡厅";
+  if (currentCat === "dessert") return "甜品店";
+  return subtypeSel.value || "餐饮服务";
+}
+function currentCatLabel() {
+  if (currentCat === "cafe") return "咖啡店";
+  if (currentCat === "dessert") return "甜品店";
+  return subtypeSel.value ? subtypeSel.options[subtypeSel.selectedIndex].text : "餐厅";
+}
+function foodCountType() { return subtypeSel.value || "餐饮服务"; }
+
+document.querySelectorAll(".tab[data-cat]").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    if (tab.dataset.cat === currentCat) return;
+    document.querySelectorAll(".tab[data-cat]").forEach((t) => t.classList.remove("active"));
+    foodCombo.classList.remove("active");
+    tab.classList.add("active");
+    currentCat = tab.dataset.cat;
+    if (addrInput.value.trim()) doSearch();
+  });
+});
+subtypeSel.addEventListener("change", () => {
+  currentCat = "food";
+  document.querySelectorAll(".tab[data-cat]").forEach((t) => t.classList.remove("active"));
+  foodCombo.classList.add("active");
+  if (addrInput.value.trim()) doSearch();
+});
+
+/* ---------- 加载高德 JS API ---------- */
+function loadAMap() {
+  return new Promise((resolve, reject) => {
+    if (window.AMap) return resolve();
+    if (!AMAP_KEY || AMAP_KEY === "你的高德Key") {
+      reject(new Error("还没配置高德 Key：打开 index.html，按顶部注释免费申请并填入即可"));
+      return;
+    }
+    if (AMAP_SECURITY_CODE) window._AMapSecurityConfig = { securityJsCode: AMAP_SECURITY_CODE };
+    const s = document.createElement("script");
+    s.src = "https://webapi.amap.com/maps?v=2.0&key=" + encodeURIComponent(AMAP_KEY)
+      + "&plugin=AMap.Geocoder,AMap.PlaceSearch,AMap.Geolocation,AMap.CitySearch";
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("高德地图脚本加载失败，请检查网络"));
+    document.head.appendChild(s);
+  });
+}
+
+/* ---------- 定位 ---------- */
+$("locBtn").addEventListener("click", async () => {
+  const locBtn = $("locBtn");
+  locBtn.classList.add("loading");
+  setStatus("正在获取当前位置…");
+  try {
+    await loadAMap();
+    const pos = await new Promise((resolve) => {
+      new AMap.Geolocation({ enableHighAccuracy: true, timeout: 8000 })
+        .getCurrentPosition((st, res) => resolve(st === "complete" && res.position ? res.position : null));
+    });
+
+    if (pos) {
+      const addr = await new Promise((resolve) => {
+        new AMap.Geocoder().getAddress([pos.lng, pos.lat], (st, res) => {
+          resolve(st === "complete" && res.regeocode ? (res.regeocode.formattedAddress || "") : "");
+        });
+      });
+      if (addr) addrInput.value = addr;
+      setStatus("");
+      doSearch(pos);
+      return;
+    }
+
+    const city = await new Promise((resolve, reject) => {
+      new AMap.CitySearch().getLocalCity((st, res) => {
+        if (st === "complete" && res && res.rectangle) {
+          const p = res.rectangle.split(";").map((s) => s.split(",").map(Number));
+          resolve({ lng: (p[0][0] + p[1][0]) / 2, lat: (p[0][1] + p[1][1]) / 2,
+            name: (res.city || res.cityname || "") + "市中心（IP定位）" });
+        } else reject(new Error("定位失败，请检查浏览器定位权限后重试"));
+      });
+    });
+    addrInput.value = city.name;
+    setStatus("已用 IP 定位到市中心，可手动改地址更精确");
+    doSearch({ lng: city.lng, lat: city.lat });
+  } catch (err) {
+    setStatus(err.message, true);
+  } finally {
+    locBtn.classList.remove("loading");
+  }
+});
+
+/* ---------- 搜索 ---------- */
+searchBtn.addEventListener("click", () => doSearch());
+addrInput.addEventListener("keydown", (e) => { if (e.key === "Enter") doSearch(); });
+
+async function doSearch(centerOverride) {
+  let center = centerOverride ? { lng: centerOverride.lng, lat: centerOverride.lat } : null;
+  const addr = addrInput.value.trim();
+  if (!center && !addr) { setStatus("请先输入一个地址", true); return; }
+
+  searchBtn.disabled = true;
+  pickBtn.disabled = true;
+  listEl.innerHTML = "";
+  metaEl.textContent = "";
+  pois = [];
+  document.querySelectorAll(".tab-count").forEach((el) => (el.textContent = ""));
+  setStatus(center ? "正在搜索 1km 内的" + currentCatLabel() + "…" : "正在解析地址…");
+
+  try {
+    await loadAMap();
+
+    if (!center) {
+      center = await new Promise((resolve, reject) => {
+        new AMap.Geocoder().getLocation(addr, (st, res) => {
+          if (st === "complete" && res.geocodes && res.geocodes.length) resolve(res.geocodes[0].location);
+          else reject(new Error("没有找到这个地址，换个说法试试（如：城市 + 街道/小区/地标）"));
+        });
+      });
+    }
+
+    const ps = new AMap.PlaceSearch({
+      radius: 1000, autoExtend: false, type: currentType(),
+      pageSize: 25, orderBy: "distance", extensions: "all"
+    });
+    const searchPage = (page) => new Promise((resolve, reject) => {
+      ps.setPageIndex(page);
+      ps.searchNearBy("", [center.lng, center.lat], 1000, (st, res) => {
+        if (st === "complete") resolve(res);
+        else if (st === "no_data") resolve(null);
+        else reject(new Error("搜索失败，请稍后再试"));
+      });
+    });
+
+    let res = await searchPage(1);
+    if (res && res.poiList && res.poiList.pois.length) {
+      pois.push(...res.poiList.pois);
+      const pages = Math.min(Math.ceil((res.poiList.count || pois.length) / 25), 4);
+      for (let p = 2; p <= pages; p++) {
+        res = await searchPage(p);
+        if (res && res.poiList && res.poiList.pois.length) pois.push(...res.poiList.pois);
+        else break;
+      }
+    }
+
+    if (!pois.length) {
+      setStatus("1km 内没有搜到" + currentCatLabel() + "，换个分类或地址试试", true);
+      return;
+    }
+
+    const seen = new Set();
+    pois = pois.filter((p) => !seen.has(p.id) && seen.add(p.id));
+    pois = pois.filter((p) => !/(暂停营业|停业|已关闭|closed)/i.test(p.name || ""));
+    if (!pois.length) {
+      setStatus("1km 内在营的" + currentCatLabel() + "没搜到，换个分类或地址试试", true);
+      return;
+    }
+    pois.sort((a, b) => (Number(a.distance) || 0) - (Number(b.distance) || 0));
+
+    // 串行统计数量
+    const counts = [];
+    counts.push(await fetchCount(foodCountType(), center));
+    await sleep(180);
+    counts.push(await fetchCount("咖啡厅", center));
+    await sleep(180);
+    counts.push(await fetchCount("甜品店", center));
+    $("cnt-food").textContent = counts[0] != null ? counts[0] : "";
+    $("cnt-cafe").textContent = counts[1] != null ? counts[1] : "";
+    $("cnt-dessert").textContent = counts[2] != null ? counts[2] : "";
+
+    setStatus("");
+    metaEl.textContent = "找到 " + pois.length + " 家" + currentCatLabel() + "（1km 内），按距离排序";
+    renderList();
+    pickBtn.disabled = false;
+  } catch (err) {
+    setStatus(err.message, true);
+  } finally {
+    searchBtn.disabled = false;
+  }
+}
+
+function fetchCount(type, center) {
+  const ps = new AMap.PlaceSearch({
+    radius: 1000, autoExtend: false, type, pageSize: 1, extensions: "base"
+  });
+  return new Promise((resolve) => {
+    ps.searchNearBy("", [center.lng, center.lat], 1000, (st, res) => {
+      if (st === "complete" && res.poiList) resolve(res.poiList.count || 0);
+      else resolve(null);
+    });
+  });
+}
+
+/* ---------- 数据辅助 ---------- */
+function photoOf(poi) {
+  const p = poi.photos && poi.photos.find((x) => x && x.url);
+  return p ? p.url.replace(/^http:/, "https:") : "";
+}
+function ratingOf(poi) {
+  const r = poi.biz_ext && parseFloat(poi.biz_ext.rating);
+  return r ? r : 0;
+}
+function cuisineOf(poi) {
+  const segs = (poi.type || "").split(";").filter(Boolean).slice(1);
+  return segs.filter((s, i) => i === 0 || s !== segs[i - 1]).join(" · ");
+}
+// 距离统一 km
+function kmOf(meters) {
+  if (!meters) return "";
+  return parseFloat((meters / 1000).toFixed(2)) + "km";
+}
+
+const STORE_SVG = '<svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor">'
+  + '<path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/></svg>';
+
+function thumbInner(poi) {
+  const url = photoOf(poi);
+  return url
+    ? '<img src="' + esc(url) + '" alt="" loading="lazy" onerror="this.parentNode.classList.add(\'fallback\')">' + STORE_SVG
+    : STORE_SVG;
+}
+
+// 评分星星 HTML
+function starsHTML(poi) {
+  const r = ratingOf(poi);
+  if (!r) return '<span class="no-rating">暂无评分</span>';
+  const pct = Math.max(0, Math.min(100, r / 5 * 100));
+  return '<span class="stars"><span class="bg">★★★★★</span>'
+    + '<span class="fg" style="width:' + pct + '%">★★★★★</span></span>'
+    + '<span class="rating-num">' + r.toFixed(1) + "</span>";
+}
+
+/* ---------- 列表渲染 ---------- */
+const TRI_SVG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 5.5l7 11H5z"/></svg>';
+const CHECK_SVG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M9 16.2l-3.5-3.5L4 14.2 9 19l11-11-1.4-1.4z"/></svg>';
+
+function cardHTML(poi, idx) {
+  const distText = kmOf(Number(poi.distance) || 0);
+  const cuisine = cuisineOf(poi);
+  const added = blindEntries.some((e) => e.kind === "poi" && e.poi.id === poi.id);
+
+  return '<li class="card" id="card-' + idx + '">'
+    + '<div class="resto-thumb' + (photoOf(poi) ? "" : " fallback") + '">' + thumbInner(poi) + "</div>"
+    + '<div class="card-body">'
+    + '<div class="card-top"><div class="card-name">' + esc(poi.name) + '</div>'
+    + '<div class="card-dist">' + esc(distText) + "</div></div>"
+    + '<div class="card-addr">' + esc(poi.address || "") + "</div>"
+    + '<div class="card-stars">' + starsHTML(poi) + "</div>"
+    + (cuisine ? '<div class="card-tags"><span class="tag">' + esc(cuisine) + "</span></div>" : "")
+    + "</div>"
+    + '<button class="add-blind' + (added ? " added" : "") + '" data-idx="' + idx
+    + '" title="塞进盲盒">' + (added ? CHECK_SVG : TRI_SVG) + "</button>"
+    + "</li>";
+}
+function renderList() { listEl.innerHTML = pois.map(cardHTML).join(""); }
+
+/* ---------- toast ---------- */
+let toastTimer = null;
+function toast(msg) {
+  const el = $("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 1800);
+}
+
+/* ================= 盲盒模式 ================= */
+let blindEntries = []; // {id, kind:'custom'|'poi', name, poi}
+let entrySeq = 0;
+let boxDeco = [];      // 每个条目的包装装饰 {emo, label, surface, lid}，按条目索引
+let packOrder = [];    // 展示顺序：条目索引的乱序数组
+
+function shuffleIdx(n) {
+  const a = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function makeDeco() {
+  const colors = BOX_COLORS[Math.floor(Math.random() * BOX_COLORS.length)];
+  return {
+    emo: BOX_EMOJI[Math.floor(Math.random() * BOX_EMOJI.length)],
+    label: FUNNY_LABELS[Math.floor(Math.random() * FUNNY_LABELS.length)],
+    surface: colors[0], lid: colors[1]
+  };
+}
+
+const FUNNY_LABELS = [
+  "吃了会暴富", "今日不踩雷", "胖三斤警告", "神秘碳水炸弹",
+  "老板极力推荐（他自己说的）", "可能要排队", "盲盒本盒不背锅",
+  "踩雷算我的（并不）", "碳水含量未知", "吃完会开心（概率事件）",
+  "内含惊喜或惊吓", "缘分到了自然开", "开盒需谨慎", "好吃就当我请的",
+  "吃完想二刷", "辣度随缘"
+];
+const BOX_EMOJI = ["🎁", "📦", "🥡", "🍱", "🎀"];
+const BOX_COLORS = [
+  ["#ffd9c2", "#ff9a5c"], ["#d7f0d1", "#7ec96b"], ["#d6e6ff", "#7aa8f5"],
+  ["#ffe1f0", "#f58ac2"], ["#fff0bd", "#f5c542"], ["#e6d8ff", "#a87ff0"]
+];
+
+const customInput = $("customInput");
+$("addCustomBtn").addEventListener("click", addCustom);
+customInput.addEventListener("keydown", (e) => { if (e.key === "Enter") addCustom(); });
+
+function addCustom() {
+  const v = customInput.value.trim();
+  if (!v) { toast("先写点什么再添加呀"); return; }
+  if (blindEntries.length >= 10) { toast("最多 10 个，塞不下啦"); return; }
+  blindEntries.push({ id: "e" + (++entrySeq), kind: "custom", name: v });
+  customInput.value = "";
+  invalidatePack();
+  renderEntries();
+  toast("已添加（" + blindEntries.length + "/10）");
+}
+
+function removeEntry(id) {
+  blindEntries = blindEntries.filter((e) => e.id !== id);
+  invalidatePack();
+  renderEntries();
+  if (pois.length) renderList();
+}
+
+function renderEntries() {
+  const chips = $("entryChips");
+  $("blindLim").textContent = blindEntries.length + "/10";
+  if (!blindEntries.length) {
+    chips.innerHTML = '<span class="empty-tip">还是空的，先填一个或去搜餐厅吧～</span>';
+    return;
+  }
+  chips.innerHTML = blindEntries.map((e) =>
+    '<span class="echip"><span class="txt">' + (e.kind === "poi" ? "🍽 " : "✏️ ")
+    + esc(e.name) + "</span><button class='rm' data-id='" + e.id + "'>×</button></span>"
+  ).join("");
+  chips.querySelectorAll(".rm").forEach((b) =>
+    b.addEventListener("click", () => removeEntry(b.dataset.id)));
+}
+
+// 卡片右下角三角：加入 / 移出盲盒
+listEl.addEventListener("click", (e) => {
+  const btn = e.target.closest(".add-blind");
+  if (!btn) return;
+  const poi = pois[Number(btn.dataset.idx)];
+  if (!poi) return;
+  const exist = blindEntries.find((x) => x.kind === "poi" && x.poi.id === poi.id);
+  if (exist) {
+    removeEntry(exist.id);
+    toast("已从盲盒拿出来");
+  } else {
+    if (blindEntries.length >= 10) { toast("最多 10 个，塞不下啦"); return; }
+    blindEntries.push({ id: "e" + (++entrySeq), kind: "poi", name: poi.name, poi });
+    invalidatePack();
+    renderEntries();
+    renderList();
+    toast("已塞进盲盒（" + blindEntries.length + "/10）");
+  }
+});
+
+function invalidatePack() {
+  $("packedPanel").hidden = true;
+}
+
+/* ---------- 包装盲盒 ---------- */
+$("packBtn").addEventListener("click", () => {
+  if (blindEntries.length < 2) { toast("至少放 2 个才叫盲盒吧"); return; }
+  // 每个条目一套装饰，然后打乱盒子位置
+  boxDeco = blindEntries.map(() => makeDeco());
+  packOrder = shuffleIdx(blindEntries.length);
+  const grid = $("packedGrid");
+  grid.innerHTML = packOrder.map((entryIdx) => mboxHTML(entryIdx)).join("");
+  $("packedPanel").hidden = false;
+  $("packedPanel").scrollIntoView({ behavior: "smooth", block: "center" });
+  toast("包装完成，顺序已打乱，标签玄学已加成");
+});
+
+function mboxHTML(i) {
+  const d = boxDeco[i];
+  return '<div class="mbox" data-i="' + i + '">'
+    + '<div class="mbox-lid" style="background:' + d.lid + '"></div>'
+    + '<div class="mbox-surface" style="background:' + d.surface + '">'
+    + '<span class="emo">' + d.emo + "</span>"
+    + '<span class="flabel" style="color:' + d.lid + '">' + esc(d.label) + "</span>"
+    + '<span class="reveal" style="color:' + d.lid + '">？</span>'
+    + "</div></div>";
+}
+
+/* ---------- 救救我：抽奖 ---------- */
+$("saveMeBtn").addEventListener("click", startLottery);
+$("lagainBtn").addEventListener("click", () => {
+  $("lotteryOverlay").classList.remove("show");
+  setTimeout(startLottery, 250);
+});
+
+async function startLottery() {
+  if (blindEntries.length < 2) { toast("至少放 2 个再让命运出手"); return; }
+  // 每次开抽都重新装饰并打乱位置
+  boxDeco = blindEntries.map(() => makeDeco());
+  packOrder = shuffleIdx(blindEntries.length);
+
+  const overlayEl = $("lotteryOverlay");
+  const grid = $("lotteryGrid");
+  const result = $("lresult");
+  const actions = $("lactions");
+  result.classList.remove("show");
+  actions.classList.remove("show");
+  grid.innerHTML = packOrder.map((entryIdx) => mboxHTML(entryIdx)).join("");
+  overlayEl.classList.add("show");
+
+  const boxes = [...grid.querySelectorAll(".mbox")];
+
+  // 跑灯：循环高亮，逐渐减速
+  const winnerIdx = Math.floor(Math.random() * boxes.length);
+  let idx = Math.floor(Math.random() * boxes.length);
+  const steps = 18 + winnerIdx;
+  for (let k = 0; k < steps; k++) {
+    boxes.forEach((b) => b.classList.remove("hot"));
+    boxes[idx].classList.add("hot");
+    idx = (idx + 1) % boxes.length;
+    await sleep(75 + Math.pow(k / steps, 2) * 320);
+  }
+  // 收尾：确保落在中奖盒
+  boxes.forEach((b) => b.classList.remove("hot"));
+  const winner = boxes[winnerIdx];
+  winner.classList.add("hot");
+
+  await sleep(350);
+  winner.classList.remove("hot");
+  winner.classList.add("winner");
+  const winnerEntryIdx = packOrder[winnerIdx];
+  winner.querySelector(".reveal").textContent = blindEntries[winnerEntryIdx].name;
+  fireConfettiAt(winner);
+
+  // 结果卡
+  const entry = blindEntries[winnerEntryIdx];
+  $("lname").textContent = entry.name;
+  if (entry.kind === "poi") {
+    $("lstars").innerHTML =
+      '<div style="display:flex;gap:6px;align-items:center">' + starsHTML(entry.poi) + "</div>";
+    const dist = kmOf(Number(entry.poi.distance) || 0);
+    const cost = entry.poi.biz_ext && Number(entry.poi.biz_ext.cost)
+      ? "人均 ¥" + Math.round(Number(entry.poi.biz_ext.cost)) : "";
+    $("linfo").innerHTML =
+      [dist, cost, entry.poi.address ? esc(entry.poi.address) : ""].filter(Boolean).join(" · ")
+      + (cuisineOf(entry.poi) ? "<br>" + esc(cuisineOf(entry.poi)) : "");
+    const loc = entry.poi.location;
+    const nav = $("lnavLink");
+    if (loc) {
+      nav.href = "https://uri.amap.com/marker?position=" + loc.lng + "," + loc.lat
+        + "&name=" + encodeURIComponent(entry.name) + "&callnative=1";
+      nav.style.display = "";
+    } else nav.style.display = "none";
+  } else {
+    $("lstars").innerHTML = '<span class="no-rating">自定义选项，命运已为你盖章 ✅</span>';
+    $("linfo").textContent = "想吃就去，别怂。";
+    $("lnavLink").style.display = "none";
+  }
+
+  await sleep(450);
+  result.classList.add("show");
+  actions.classList.add("show");
+}
+
+// 在指定元素位置喷发彩带
+function fireConfettiAt(target) {
+  const r = target.getBoundingClientRect();
+  const pr = target.closest(".lottery-panel").getBoundingClientRect();
+  const cx = r.left - pr.left + r.width / 2;
+  const cy = r.top - pr.top + r.height / 2;
+  const colors = ["#ff7a2e", "#ffd84d", "#ff3b30", "#4f9ef8", "#7ed957", "#ff9ecf", "#b18cff"];
+  for (let i = 0; i < 36; i++) {
+    const p = document.createElement("span");
+    p.className = "cf-piece";
+    const size = 6 + Math.random() * 7;
+    p.style.width = size + "px"; p.style.height = size + "px";
+    p.style.background = colors[i % colors.length];
+    if (Math.random() > .5) p.style.borderRadius = "50%";
+    p.style.left = cx + "px"; p.style.top = cy + "px";
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 80 + Math.random() * 180;
+    p.style.setProperty("--x", Math.cos(angle) * dist + "px");
+    p.style.setProperty("--y", Math.sin(angle) * dist + "px");
+    p.style.setProperty("--r", (Math.random() * 720 - 360) + "deg");
+    p.style.animationDelay = (Math.random() * .12) + "s";
+    target.closest(".lottery-panel").appendChild(p);
+    setTimeout(() => p.remove(), 1500);
+  }
+}
+
+/* ================= 普通模式：随机抽选 ================= */
+pickBtn.addEventListener("click", () => startPick());
+$("againBtn").addEventListener("click", () => {
+  overlay.classList.remove("show");
+  setTimeout(() => pickBtn.click(), 200);
+});
+
+const FOOD_EMOJI = ["🍜", "🍔", "🍕", "🍣", "🥘", "🍲", "☕", "🍰", "🥟", "🍢"];
+
+async function startPick() {
+  if (!pois.length) return;
+  overlay.classList.add("show");
+
+  const ring = $("ring");
+  const rollName = $("rollName");
+  const pickThumb = $("pickThumb");
+  const pickStars = $("pickStars");
+  const pickInfo = $("pickInfo");
+  const actions = document.querySelector("#overlay .actions");
+
+  ring.style.display = "";
+  $("rollLabel").textContent = "命运转盘转动中";
+  rollName.className = "roll-name";
+  rollName.textContent = "";
+  pickThumb.className = "resto-thumb";
+  pickThumb.innerHTML = "";
+  pickStars.className = "";
+  pickStars.innerHTML = "";
+  pickInfo.className = "";
+  pickInfo.textContent = "";
+  actions.className = "actions";
+
+  for (let i = 0; i < 18; i++) {
+    const p = pois[Math.floor(Math.random() * pois.length)];
+    rollName.textContent = p.name;
+    ring.querySelector("span").textContent = FOOD_EMOJI[i % FOOD_EMOJI.length];
+    rollName.classList.remove("flick");
+    void rollName.offsetWidth;
+    rollName.classList.add("flick");
+    await sleep(70 + i * 5);
+  }
+
+  let pick;
+  do { pick = pois[Math.floor(Math.random() * pois.length)]; }
+  while (pois.length > 1 && pick === lastPicked);
+  lastPicked = pick;
+
+  ring.style.display = "none";
+  $("rollLabel").textContent = "就决定是这家啦";
+  rollName.className = "roll-name final";
+  rollName.textContent = pick.name;
+  fireConfettiInSheet();
+
+  await sleep(220);
+  pickThumb.className = "resto-thumb show" + (photoOf(pick) ? "" : " fallback");
+  pickThumb.innerHTML = thumbInner(pick);
+  pickStars.className = "show";
+  pickStars.innerHTML = starsHTML(pick);
+
+  const dist = kmOf(Number(pick.distance) || 0);
+  const cuisine = cuisineOf(pick);
+  const cost = pick.biz_ext && Number(pick.biz_ext.cost)
+    ? "人均 ¥" + Math.round(Number(pick.biz_ext.cost)) : "";
+  pickInfo.innerHTML =
+    [dist, cost, pick.address ? esc(pick.address) : ""].filter(Boolean).join(" · ")
+    + (cuisine ? "<br>" + esc(cuisine) : "");
+  pickInfo.className = "show";
+
+  const loc = pick.location;
+  if (loc) {
+    $("navLink").href = "https://uri.amap.com/marker?position=" + loc.lng + "," + loc.lat
+      + "&name=" + encodeURIComponent(pick.name) + "&callnative=1";
+    $("navLink").style.display = "";
+  } else $("navLink").style.display = "none";
+  actions.className = "actions show";
+
+  const idx = pois.indexOf(pick);
+  document.querySelectorAll(".card.picked").forEach((el) => el.classList.remove("picked"));
+  if (idx >= 0) {
+    const card = $("card-" + idx);
+    if (card) {
+      card.classList.add("picked");
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }
+}
+
+function fireConfettiInSheet() {
+  const sheet = document.querySelector("#overlay .sheet");
+  const colors = ["#ff7a2e", "#ffd84d", "#ff3b30", "#4f9ef8", "#7ed957", "#ff9ecf", "#b18cff"];
+  for (let i = 0; i < 36; i++) {
+    const p = document.createElement("span");
+    p.className = "cf-piece";
+    const size = 6 + Math.random() * 7;
+    p.style.width = size + "px"; p.style.height = size + "px";
+    p.style.background = colors[i % colors.length];
+    if (Math.random() > .5) p.style.borderRadius = "50%";
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 100 + Math.random() * 200;
+    p.style.setProperty("--x", Math.cos(angle) * dist + "px");
+    p.style.setProperty("--y", Math.sin(angle) * dist - 40 + "px");
+    p.style.setProperty("--r", (Math.random() * 720 - 360) + "deg");
+    p.style.animationDelay = (Math.random() * .15) + "s";
+    sheet.appendChild(p);
+    setTimeout(() => p.remove(), 1500);
+  }
+}
+
+overlay.addEventListener("click", (e) => {
+  if (e.target === overlay) overlay.classList.remove("show");
+});
+$("lcloseBtn").addEventListener("click", () =>
+  $("lotteryOverlay").classList.remove("show"));
+$("lotteryOverlay").addEventListener("click", (e) => {
+  // 结果已出来时，点弹层外的空白处可退出
+  if (e.target === $("lotteryOverlay") && $("lactions").classList.contains("show")) {
+    $("lotteryOverlay").classList.remove("show");
+  }
+});
+</script>
+</body>
+</html>
