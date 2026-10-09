@@ -398,6 +398,75 @@
   .lactions button { border: 2px solid var(--orange-soft); background: #fff; color: var(--orange-deep); }
   .lactions a { background: linear-gradient(135deg, #ff9144, #ff6f28); color: #fff; box-shadow: 0 4px 12px rgba(244,93,28,.3); }
 
+  /* ===== 收藏 & 历史 ===== */
+  .fav-btn {
+    position: absolute; right: 8px; bottom: 43px;
+    width: 27px; height: 27px; border-radius: 50%; border: none;
+    background: #fff; color: #e8c9a0;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(244,93,28,.18); z-index: 2; font-size: 15px; line-height: 1;
+  }
+  .fav-btn:active { transform: scale(.9); }
+  .fav-btn.on { color: var(--amber); }
+
+  .mine-entries { display: flex; gap: 8px; margin: 10px 12px 0; }
+  .mine-entries button {
+    flex: 1; height: 40px; border: none; border-radius: 12px;
+    background: #fff; color: #8a6a4c; font-size: 13.5px; font-weight: 700;
+    box-shadow: 0 2px 8px rgba(244,93,28,.07);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .mine-entries .badge {
+    min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+    background: var(--orange-soft); color: var(--orange-deep);
+    font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+  }
+  .mine-entries .badge:empty { display: none; }
+
+  .mine-back {
+    float: right; border: none; background: var(--orange-soft); color: var(--orange-deep);
+    font-size: 12px; font-weight: 800; border-radius: 14px; padding: 5px 12px;
+  }
+  .mine-row {
+    display: flex; align-items: center; gap: 10px;
+    background: #fff; border-radius: 14px; padding: 11px 12px; margin-top: 9px;
+    box-shadow: 0 2px 8px rgba(244,93,28,.06);
+  }
+  .mine-row .mr-info { flex: 1; min-width: 0; }
+  .mine-row .mr-name { font-size: 14.5px; font-weight: 800; }
+  .mine-row .mr-sub { font-size: 12px; color: var(--text-2); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mine-row a, .mine-row button {
+    flex-shrink: 0; border: none; border-radius: 10px;
+    font-size: 12.5px; font-weight: 800; padding: 8px 11px; text-decoration: none;
+  }
+  .mine-row a { background: var(--orange-soft); color: var(--orange-deep); }
+  .mine-row .mr-rm { background: #fdeaea; color: #e0554f; }
+
+  .hist-stats { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 7px; }
+  .hist-stat {
+    background: var(--orange-soft); color: #8c4a14; border-radius: 16px;
+    font-size: 12.5px; font-weight: 800; padding: 6px 11px;
+  }
+  .hist-stat b { color: var(--orange-deep); }
+
+  /* 普通抽选弹层星标（右上角） */
+  .sheet-fav {
+    position: absolute; right: 16px; top: 16px;
+    width: 38px; height: 38px; border-radius: 50%; border: none;
+    background: var(--orange-soft); color: #d9b48c; font-size: 19px;
+    display: flex; align-items: center; justify-content: center; z-index: 3;
+  }
+  .sheet-fav.on { color: var(--amber); background: #fff3da; }
+
+  /* 盲盒结果星标（名字旁） */
+  .lname-wrap { display: inline-flex; align-items: center; gap: 8px; }
+  .lname-fav {
+    border: none; background: var(--orange-soft); color: #d9b48c;
+    width: 34px; height: 34px; border-radius: 50%; font-size: 17px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .lname-fav.on { color: var(--amber); background: #fff3da; }
+
   /* toast */
   .toast {
     position: fixed; left: 50%; bottom: 110px; transform: translateX(-50%) translateY(20px);
@@ -422,6 +491,11 @@
 <div class="modes">
   <button class="mode-btn active" data-mode="normal">🍚 选餐厅</button>
   <button class="mode-btn" data-mode="blindbox">🎁 盲盒模式</button>
+</div>
+
+<div class="mine-entries">
+  <button id="openFavBtn">⭐ 我的收藏<span class="badge" id="favCountBadge"></span></button>
+  <button id="openHistoryBtn">👣 干饭足迹<span class="badge" id="historyCountBadge"></span></button>
 </div>
 
 <!-- ===== 普通模式 ===== -->
@@ -486,6 +560,18 @@
   </div>
 </div>
 
+<!-- ===== 我的收藏 / 干饭足迹 ===== -->
+<div class="panel" id="favPanel" hidden>
+  <h3><button class="mine-back" data-back>返回</button>⭐ 我的收藏</h3>
+  <div class="hint">收藏存在云端，同设备同浏览器一直在。</div>
+  <div id="favRows"></div>
+</div>
+<div class="panel" id="historyPanel" hidden>
+  <h3><button class="mine-back" data-back>返回</button>👣 干饭足迹</h3>
+  <div class="hist-stats" id="historyStats"></div>
+  <div id="historyRows"></div>
+</div>
+
 <!-- 普通模式底部按钮 -->
 <div class="pick-bar" id="pickBar">
   <button id="pickBtn" disabled>
@@ -497,6 +583,7 @@
 <!-- 普通抽选弹层 -->
 <div class="overlay" id="overlay">
   <div class="sheet">
+    <button class="sheet-fav" id="sheetFavBtn" title="收藏这家">☆</button>
     <div class="ring" id="ring"><span>🍜</span></div>
     <div class="roll-label" id="rollLabel">命运转盘转动中</div>
     <div class="roll-name" id="rollName"></div>
@@ -531,6 +618,7 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/2.27.1/cloudbase.full.js"></script>
 <script>
 /* ======================= 配置区 ======================= */
 // 1. 到 https://console.amap.com 免费注册并创建应用
@@ -562,6 +650,212 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
 }[c]));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* ======================= 云端：CloudBase ======================= */
+const CLOUD_ENV = "restaurant-picker-d4dxn274c37696";
+let cloudApp = null;
+let cloudDB = null;
+let cloudReady = false;
+let favRows = [];                // 收藏记录
+const favSet = new Set();        // 已收藏的 poi_id
+let historyRows = [];            // 抽奖历史
+let currentPickPoi = null;       // 普通弹层当前结果
+let currentLotteryPoi = null;    // 盲盒抽奖当前结果（自定义项时为 null）
+
+const STAR_ON = "★", STAR_OFF = "☆";
+const favStarHTML = (poiId) => (favSet.has(poiId) ? STAR_ON : STAR_OFF);
+
+async function initCloud() {
+  if (!window.cloudbase) return;
+  try {
+    cloudApp = cloudbase.init({ env: CLOUD_ENV });
+    // 匿名登录（PRIVATE 权限下，文档自动归属当前匿名用户）
+    // persistence: "local" 让匿名身份持久化，刷新后仍是同一用户，收藏不丢
+    const auth = cloudApp.auth({ persistence: "local" });
+    const loginState = await auth.getLoginState();
+    if (!loginState) {
+      await auth.anonymousAuthProvider().signIn();
+    }
+    cloudDB = cloudApp.database();
+    await Promise.all([loadFavs(), loadHistory()]);
+    cloudReady = true;
+    renderFavPanel();
+    renderHistoryPanel();
+    updateMineBadges();
+    if (pois.length) renderList();
+  } catch (err) {
+    console.warn("云端初始化失败（不影响抽餐厅）：", err);
+  }
+}
+
+async function loadFavs() {
+  const res = await cloudDB.collection("favorites")
+    .where({}).orderBy("created_at", "desc").limit(200).get();
+  favRows = res.data || [];
+  favRows.forEach((r) => favSet.add(r.poi_id));
+}
+
+async function loadHistory() {
+  const res = await cloudDB.collection("pick_history")
+    .where({}).orderBy("created_at", "desc").limit(200).get();
+  historyRows = res.data || [];
+}
+
+// 收藏 / 取消收藏
+async function toggleFav(poi) {
+  if (!cloudReady) { toast("云端还没连上，稍等一下再试"); return; }
+  if (favSet.has(poi.id)) {
+    await removeFavById(poi.id);
+    return;
+  }
+  const row = {
+    poi_id: poi.id, name: poi.name || "", address: poi.address || "",
+    lng: poi.location ? poi.location.lng : null,
+    lat: poi.location ? poi.location.lat : null,
+    created_at: cloudDB.serverDate()
+  };
+  const res = await cloudDB.collection("favorites").add(row);
+  if (res.id) {
+    favSet.add(poi.id);
+    favRows.unshift({ ...row, _id: res.id });
+    refreshFavUI();
+    toast("已加入收藏");
+  } else {
+    toast("操作失败，稍后再试");
+  }
+}
+
+async function removeFavById(poiId) {
+  if (!cloudReady) return;
+  await cloudDB.collection("favorites").where({ poi_id: poiId }).remove();
+  favSet.delete(poiId);
+  favRows = favRows.filter((r) => r.poi_id !== poiId);
+  refreshFavUI();
+  toast("已取消收藏");
+}
+
+// 收藏变化后同步所有界面
+function refreshFavUI() {
+  renderList();
+  renderFavPanel();
+  updateMineBadges();
+  if (currentPickPoi) {
+    const b = $("sheetFavBtn");
+    b.textContent = favStarHTML(currentPickPoi.id);
+    b.classList.toggle("on", favSet.has(currentPickPoi.id));
+  }
+  if (currentLotteryPoi) {
+    const b = $("lotteryFavBtn");
+    if (b) {
+      b.textContent = favStarHTML(currentLotteryPoi.id);
+      b.classList.toggle("on", favSet.has(currentLotteryPoi.id));
+    }
+  }
+}
+
+// 抽中后自动写历史
+async function addHistory(poi, category) {
+  if (!cloudReady || !poi) return;
+  const row = {
+    name: poi.name || "", category: category || "", address: poi.address || "",
+    created_at: cloudDB.serverDate()
+  };
+  const res = await cloudDB.collection("pick_history").add(row);
+  if (res.id) {
+    historyRows.unshift({ ...row, _id: res.id });
+    if (historyRows.length > 200) historyRows.length = 200;
+    renderHistoryPanel();
+    updateMineBadges();
+  }
+}
+
+function updateMineBadges() {
+  $("favCountBadge").textContent = favRows.length || "";
+  $("historyCountBadge").textContent = historyRows.length || "";
+}
+
+/* ---------- 我的收藏 / 干饭足迹 视图 ---------- */
+const favPanel = $("favPanel");
+const historyPanel = $("historyPanel");
+
+function showMine(which) {
+  normalView.style.display = "none";
+  blindboxView.classList.remove("show");
+  pickBar.style.display = "none";
+  favPanel.hidden = which !== "fav";
+  historyPanel.hidden = which !== "history";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function hideMine() {
+  favPanel.hidden = true;
+  historyPanel.hidden = true;
+  const blind = document.querySelector(".mode-btn.active").dataset.mode === "blindbox";
+  normalView.style.display = blind ? "none" : "";
+  blindboxView.classList.toggle("show", blind);
+  pickBar.style.display = blind ? "none" : "";
+}
+$("openFavBtn").addEventListener("click", () => { renderFavPanel(); showMine("fav"); });
+$("openHistoryBtn").addEventListener("click", () => { renderHistoryPanel(); showMine("history"); });
+document.querySelectorAll("[data-back]").forEach((b) => b.addEventListener("click", hideMine));
+
+function amapLinkOf(r) {
+  if (r.lng != null && r.lat != null) {
+    return "https://uri.amap.com/marker?position=" + r.lng + "," + r.lat
+      + "&name=" + encodeURIComponent(r.name) + "&callnative=1";
+  }
+  return "";
+}
+
+function renderFavPanel() {
+  const box = $("favRows");
+  if (!box) return;
+  if (!favRows.length) {
+    box.innerHTML = '<div class="empty-tip">还没有收藏，去搜餐厅时点 ☆ 即可。</div>';
+    return;
+  }
+  box.innerHTML = favRows.map((r) => {
+    const link = amapLinkOf(r);
+    return '<div class="mine-row"><div class="mr-info"><div class="mr-name">' + esc(r.name)
+      + '</div><div class="mr-sub">' + esc(r.address || "") + '</div></div>'
+      + (link ? '<a target="_blank" rel="noopener" href="' + link + '">导航</a>' : "")
+      + '<button class="mr-rm" data-fav-rm="' + esc(r.poi_id) + '">取消</button></div>';
+  }).join("");
+  box.querySelectorAll("[data-fav-rm]").forEach((b) =>
+    b.addEventListener("click", () => removeFavById(b.dataset.favRm)));
+}
+
+function fmtTime(s) {
+  const d = new Date(s);
+  if (isNaN(d)) return "";
+  return d.toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" })
+    + " " + d.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
+function renderHistoryPanel() {
+  const stats = $("historyStats");
+  const box = $("historyRows");
+  if (!stats || !box) return;
+  if (!historyRows.length) {
+    stats.innerHTML = "";
+    box.innerHTML = '<div class="empty-tip">还没有足迹，抽中一次就会自动记录。</div>';
+    return;
+  }
+  // 按店名聚合计数，取 Top 10
+  const cnt = new Map();
+  historyRows.forEach((r) => cnt.set(r.name, (cnt.get(r.name) || 0) + 1));
+  stats.innerHTML = [...cnt.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10)
+    .map(([name, n]) => '<span class="hist-stat">' + esc(name) + " ×<b>" + n + "</b></span>").join("");
+
+  box.innerHTML = historyRows.slice(0, 60).map((r) =>
+    '<div class="mine-row"><div class="mr-info"><div class="mr-name">' + esc(r.name)
+    + '</div><div class="mr-sub">' + esc(r.category || "")
+    + (r.address ? " · " + esc(r.address) : "") + "</div></div>"
+    + '<span class="mr-sub" style="flex-shrink:0">' + esc(fmtTime(r.created_at)) + "</span></div>"
+  ).join("");
+}
+
+initCloud();
+/* ============================================================= */
 
 function setStatus(msg, isError = false) {
   statusEl.textContent = msg || "";
@@ -602,6 +896,8 @@ document.querySelectorAll(".mode-btn").forEach((btn) => {
     normalView.style.display = blind ? "none" : "";
     blindboxView.classList.toggle("show", blind);
     pickBar.style.display = blind ? "none" : "";
+    favPanel.hidden = true;
+    historyPanel.hidden = true;
   });
 });
 
@@ -855,6 +1151,8 @@ function cardHTML(poi, idx) {
     + '<div class="card-stars">' + starsHTML(poi) + "</div>"
     + (cuisine ? '<div class="card-tags"><span class="tag">' + esc(cuisine) + "</span></div>" : "")
     + "</div>"
+    + '<button class="fav-btn' + (favSet.has(poi.id) ? " on" : "") + '" data-fav-idx="' + idx
+    + '" title="收藏这家">' + favStarHTML(poi.id) + "</button>"
     + '<button class="add-blind' + (added ? " added" : "") + '" data-idx="' + idx
     + '" title="塞进盲盒">' + (added ? CHECK_SVG : TRI_SVG) + "</button>"
     + "</li>";
@@ -943,6 +1241,14 @@ function renderEntries() {
   chips.querySelectorAll(".rm").forEach((b) =>
     b.addEventListener("click", () => removeEntry(b.dataset.id)));
 }
+
+// 卡片收藏星标
+listEl.addEventListener("click", (e) => {
+  const btn = e.target.closest(".fav-btn");
+  if (!btn) return;
+  const poi = pois[Number(btn.dataset.favIdx)];
+  if (poi) toggleFav(poi);
+});
 
 // 卡片右下角三角：加入 / 移出盲盒
 listEl.addEventListener("click", (e) => {
@@ -1040,7 +1346,15 @@ async function startLottery() {
 
   // 结果卡
   const entry = blindEntries[winnerEntryIdx];
-  $("lname").textContent = entry.name;
+  currentLotteryPoi = entry.kind === "poi" ? entry.poi : null;
+  $("lname").innerHTML = '<span class="lname-wrap"><span>' + esc(entry.name) + "</span>"
+    + (currentLotteryPoi
+      ? '<button class="lname-fav' + (favSet.has(currentLotteryPoi.id) ? " on" : "")
+      + '" id="lotteryFavBtn" title="收藏这家">' + favStarHTML(currentLotteryPoi.id) + "</button>"
+      : "") + "</span>";
+  $("lname").onclick = (ev) => {
+    if (ev.target.closest("#lotteryFavBtn") && currentLotteryPoi) toggleFav(currentLotteryPoi);
+  };
   if (entry.kind === "poi") {
     $("lstars").innerHTML =
       '<div style="display:flex;gap:6px;align-items:center">' + starsHTML(entry.poi) + "</div>";
@@ -1066,6 +1380,7 @@ async function startLottery() {
   await sleep(450);
   result.classList.add("show");
   actions.classList.add("show");
+  if (currentLotteryPoi) addHistory(currentLotteryPoi, "盲盒");
 }
 
 // 在指定元素位置喷发彩带
@@ -1115,6 +1430,11 @@ async function startPick() {
   const actions = document.querySelector("#overlay .actions");
 
   ring.style.display = "";
+  currentPickPoi = null;
+  const sheetFav = $("sheetFavBtn");
+  sheetFav.textContent = STAR_OFF;
+  sheetFav.classList.remove("on");
+  sheetFav.onclick = () => { if (currentPickPoi) toggleFav(currentPickPoi); };
   $("rollLabel").textContent = "命运转盘转动中";
   rollName.className = "roll-name";
   rollName.textContent = "";
@@ -1140,6 +1460,9 @@ async function startPick() {
   do { pick = pois[Math.floor(Math.random() * pois.length)]; }
   while (pois.length > 1 && pick === lastPicked);
   lastPicked = pick;
+  currentPickPoi = pick;
+  sheetFav.textContent = favStarHTML(pick.id);
+  sheetFav.classList.toggle("on", favSet.has(pick.id));
 
   ring.style.display = "none";
   $("rollLabel").textContent = "就决定是这家啦";
@@ -1179,6 +1502,8 @@ async function startPick() {
       card.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }
+
+  addHistory(pick, currentCatLabel());
 }
 
 function fireConfettiInSheet() {
